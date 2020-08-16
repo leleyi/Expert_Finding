@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="lj@10.1.13.143:22">
+    <serverData>
+      <paths name="lj@10.1.13.143:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/pycharm_project_463" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="sftp">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/workspace/Expert" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
