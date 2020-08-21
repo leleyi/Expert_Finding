@@ -30,9 +30,11 @@ class Model:
         logger.debug("Building tfidf vectors")
         # self.docs_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_dictionary(self.vocab)
 
-        bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
+        # bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
+        # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
+        # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
+        bert_model = SentenceTransformer("roberta-large-nli-stsb-mean-tokens")
         self.docs_vectors = bert_model.encode(T)
-
         D = self.A_da.shape[0]
         C = self.A_da.shape[1]
 
@@ -48,7 +50,7 @@ class Model:
         query_vector = self.docs_vectors[d]
         C = self.A_da.shape[1]
         # Create jumping vector
-        Pd = np.squeeze(query_vector.dot(self.docs_vectors.T).A)
+        Pd = np.squeeze(query_vector.dot(self.docs_vectors.T))
 
         if Pd.sum() > 0:
             Pd = Pd / Pd.sum()

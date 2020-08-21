@@ -28,6 +28,7 @@ mpl_logger.setLevel(logging.WARNING)
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 import tensorflow as tf
+
 tf.logging.set_verbosity(tf.logging.ERROR)  # or any {DEBUG, INFO, WARN, ERROR, FATAL}
 import tensorflow as tf
 if type(tf.contrib) != type(tf): tf.contrib._warning = None

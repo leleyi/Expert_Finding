@@ -14,8 +14,10 @@ class Model:
     def fit(self, A_da, A_dd, T):
         self.A_da = A_da
 
-        bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
-
+        # bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
+        # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
+        # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
+        bert_model = SentenceTransformer("roberta-large-nli-stsb-mean-tokens")
         self.docs_vectors = bert_model.encode(T)
 
     def predict(self, d, mask=None):

@@ -18,7 +18,7 @@ class Model:
         self.docs_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_dictionary(self.vocab)
         authors_metadocs = list()
         for i in range(A_da.shape[1]):
-            authors_metadocs.append(" ".join([T[j] for j in A_da[:,i].nonzero()[0] ]))
+            authors_metadocs.append(" ".join([T[j] for j in A_da[:,i].nonzero()[0]]))
         self.authors_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_N(self.vocab, authors_metadocs)
 
     def predict(self, d, mask = None):

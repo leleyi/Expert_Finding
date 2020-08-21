@@ -6,6 +6,7 @@ import scipy
 
 logger = logging.getLogger()
 
+
 class Model:
 
     def __init__(self):
@@ -14,9 +15,10 @@ class Model:
     def fit(self, A_da, A_dd, T):
         self.A_da = A_da
 
-        bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
-
-        self.docs_vectors = bert_model.encode(T)
+        # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
+        model = SentenceTransformer('/home/lj/tmp/pycharm_project_463/expert_finding/preprocessing/train_model/output/training_stsbenchmark_avg_word_embeddings'
+                                    '-2020-08-20_14-02-24')
+        self.docs_vectors = model.encode(T)
 
     def predict(self, d, mask=None):
         query_vector = self.docs_vectors[d]

@@ -1,27 +1,35 @@
 """
 An example script to use expert_finding as a package. Its shows how to load a dataset, create a model and run an evaluation.
 """
-
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 import expert_finding.io
 import expert_finding.evaluation
 import expert_finding.models.random_model
 import expert_finding.models.panoptic_model
 import expert_finding.models.propagation_model
-import expert_finding.models.voting_model
-import numpy as np
+import expert_finding.models.bert_model
 
+import expert_finding.models.voting_model
+import expert_finding.models.voting_idne_model
+import expert_finding.models.voting_tadw_model
+import expert_finding.models.bert_voting_model
+import expert_finding.models.bert_propagation_model
+
+import os
+import logging
+logger = logging.getLogger()
 
 # Print the list of available datasets
-dataset_names = expert_finding.io.get_list_of_dataset_names()
-print("Names of the datasets available:")
-for dn in dataset_names:
-    print(dn)
-print()
+# dataset_names = expert_finding.io.get_list_of_dataset_names()
+# print("Names of the datasets available:")
+# for dn in dataset_names:
+#     print(dn)
+# print()
 
 
 # Load one dataset
-A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("stats.stackexchange.com")
-
+A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("academia.stackexchange.com")
 
 """
 A_da : adjacency matrix of the document-candidate network (scipy.sparse.csr_matrix)
@@ -35,25 +43,26 @@ tags : names of the labels of expertise (numpy.array)
 """
 
 # You can load a model
-#model = expert_finding.models.panoptic_model.Model()
-model = expert_finding.models.voting_model.Model()
-#model = expert_finding.models.propagation_model.Model()
-
-
+# model = expert_finding.models.panoptic_model.Model()
 # You can create  a model
-# class Model:
-#     def __init__(self):
-#         self.num_candidates = 0
-#
-#     def fit(self, A_da, A_dd, T):
-#         self.num_candidates = A_da.shape[1]
-#
-#     def predict(self, d, mask = None):
-#         if mask is not None:
-#             self.num_candidates = len(mask)
-#         return np.random.rand(self.num_candidates)
+# bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
+# T_embeddings = bert_model.encode(T)
 
-# model = Model()
+print("where : ::", os.path.abspath('.'))
+
+import expert_finding.models.propagation_idne_model
+import expert_finding.models.propagation_tadw_model
+# import expert_finding.models.bert_panoptic_model
+# import expert_finding.models.gvnrt_expert_model
+# import expert_finding.models.pre_ane_model
+# import expert_finding.models.hybrid_voting_model
+
+# model = expert_finding.models.random_model.Model()
+# model = expert_finding.models.propagation_tadw_model.Model()
+# model = expert_finding.models.voting_model.Model()
+
+model = expert_finding.models.bert_propagation_model.Model()
+
 
 # Run an evaluation
 eval_batches, merged_eval = expert_finding.evaluation.run(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags)

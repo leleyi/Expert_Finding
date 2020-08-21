@@ -49,7 +49,7 @@ def get_average_precision(y_true, y_score):
 Reciprocal rank
 """
 def get_reciprocal_rank(y_true, y_score):
-    sorting_index = y_score.argsort()[::-1]
+    sorting_index = y_score.argsort()[::-1]  # 根据分数排序(并且是index) 排名靠前的分数的 index在最前面.
     for k, i in enumerate(sorting_index):
         if y_true[i] == 1:
             return k+1

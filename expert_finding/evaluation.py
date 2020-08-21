@@ -1,8 +1,13 @@
 import numpy as np
 import expert_finding.metrics
 import logging
+
+import matplotlib
+matplotlib.use('Qt5Agg')
+
 import matplotlib.pyplot as plt
 from numpy import interp
+# print("A B ", matplotlib.get_backend())
 fig_dim = (15.0, 12.0)
 
 logger = logging.getLogger()
