@@ -3,9 +3,8 @@ import expert_finding.preprocessing.text.dictionary
 import expert_finding.preprocessing.text.vectorizers
 import scipy.sparse
 import logging
-
 logger = logging.getLogger()
-
+from gensim.summarization import bm25
 class Model:
 
     def __init__(self):
@@ -18,7 +17,12 @@ class Model:
         logger.debug("Building tfidf vectors")
         self.docs_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_dictionary(self.vocab)
 
+        # self.bm25Model = bm25(T)
+        # self.average_idf = sum(map(lambda k: float(self.bm25Model.idf[k]), self.bm25Model.idf.keys())) / len(self.bm25Model.idf.keys())
     def predict(self, d, mask = None):
+
+        # scores = self.bm25Model.get_scores(d, self.average_idf)
+        # print("tell me the scores :", scores)
         query_vector = self.docs_vectors[d]
         documents_scores = np.squeeze(query_vector.dot(self.docs_vectors.T).A)
         documents_sorting_indices = documents_scores.argsort()[::-1]
@@ -30,8 +34,6 @@ class Model:
         if mask is not None:
             candidates_scores = candidates_scores[mask]
         return candidates_scores
-
-
 
 
 

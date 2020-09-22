@@ -30,10 +30,11 @@ class Model:
         logger.debug("Building tfidf vectors")
         # self.docs_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_dictionary(self.vocab)
 
-        # bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
+        bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
         # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
         # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
-        bert_model = SentenceTransformer("roberta-large-nli-stsb-mean-tokens")
+        # bert_model = SentenceTransformer("roberta-large-nli-stsb-mean-tokens")
+        bert_model._first_module().max_seq_length = 256
         self.docs_vectors = bert_model.encode(T)
         D = self.A_da.shape[0]
         C = self.A_da.shape[1]

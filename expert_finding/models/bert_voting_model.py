@@ -13,11 +13,17 @@ class Model:
 
     def fit(self, A_da, A_dd, T):
         self.A_da = A_da
-
+        maxLen = 0;
+        for d in T:
+            maxLen = max(maxLen, len(d.split()))
+        print(maxLen)
         # bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
+        # "scripts/continue/output/training_dblpbert-base-uncased-2020-09-14_19-25-37"
+        bert_model = SentenceTransformer('preprocessing/train_model/output/training_stsbenchmark_avg_word_embeddings-2020-08-20_14-02-24')
+        bert_model._first_module().max_seq_length = 510
         # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
         # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
-        bert_model = SentenceTransformer("roberta-large-nli-stsb-mean-tokens")
+        # bert_model = SentenceTransformer("roberta-large-nli-stsb-mean-tokens")
         self.docs_vectors = bert_model.encode(T)
 
     def predict(self, d, mask=None):

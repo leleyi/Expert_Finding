@@ -35,7 +35,7 @@ class Model:
         D = self.A_da.shape[0]
         C = self.A_da.shape[1]
 
-        aa_zeros = scipy.sparse.csr_matrix((C,C))
+        aa_zeros = scipy.sparse.csr_matrix((C, C))
 
         left_side = scipy.sparse.vstack([aa_zeros, self.A_da])
         right_side = scipy.sparse.vstack([self.A_da.T, A_dd])

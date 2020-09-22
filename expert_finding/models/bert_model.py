@@ -16,9 +16,17 @@ class Model:
         self.A_da = A_da
 
         # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
-        model = SentenceTransformer('/home/lj/tmp/pycharm_project_463/expert_finding/preprocessing/train_model/output/training_stsbenchmark_avg_word_embeddings'
-                                    '-2020-08-20_14-02-24')
-        self.docs_vectors = model.encode(T)
+        # print(bert_model.get_max_seq_length());
+        # print(bert_model.get_max_seq_length());
+        # "/tmp/pycharm_project_463/scripts/continue/output/training_bert-base-uncased-2020-09-15_16-38-01"
+        # bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/scripts/continue/output/training_bert_base_uncased-2020-09-15_16-38-01")
+        # bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/scripts/continue/output/training_nli_sts_dblproberta-base-nli-stsb-mean-tokens")
+        #bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/scripts/continue/output/training_dblp1bert-base-uncased")
+        bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
+        # bert_model = SentenceTransformer("roberta-base-nli-stsb-mean-tokens")
+        bert_model._first_module().max_seq_length = 256
+
+        self.docs_vectors = bert_model.encode(T)
 
     def predict(self, d, mask=None):
         query_vector = self.docs_vectors[d]

@@ -35,7 +35,7 @@ class Model:
 
         self.bigraph = scipy.sparse.hstack([left_side, right_side])
         self.bigraph = normalize(self.bigraph, axis=0, norm='l1')
-
+        print(self.bigraph)
     def predict(self, d, mask = None):
         query_vector = self.docs_vectors[d]
         C = self.A_da.shape[1]
@@ -45,7 +45,7 @@ class Model:
         if Pd.sum() > 0:
             Pd = Pd / Pd.sum()
         Pc = np.zeros(self.A_da.shape[1])
-        P = np.vstack([Pc.reshape(Pc.shape[0],1), Pd.reshape(Pd.shape[0],1)])
+        P = np.vstack([Pc.reshape(Pc.shape[0], 1), Pd.reshape(Pd.shape[0],1)])
         if P.sum() > 0:
             P = P / P.sum()
         #P = scipy.sparse.crs_matrix(P)
