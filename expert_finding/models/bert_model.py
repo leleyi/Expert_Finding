@@ -22,9 +22,10 @@ class Model:
         # bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/scripts/continue/output/training_bert_base_uncased-2020-09-15_16-38-01")
         # bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/scripts/continue/output/training_nli_sts_dblproberta-base-nli-stsb-mean-tokens")
         #bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/scripts/continue/output/training_dblp1bert-base-uncased")
-        bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
+        # bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
+        bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_stsbenchmark_continue_training-sci_bert_nil-2020-09-22_08-50-29")
         # bert_model = SentenceTransformer("roberta-base-nli-stsb-mean-tokens")
-        bert_model._first_module().max_seq_length = 256
+        bert_model._first_module().max_seq_length = 500
 
         self.docs_vectors = bert_model.encode(T)
 

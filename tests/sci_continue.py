@@ -28,19 +28,16 @@ if not os.path.exists(sts_dataset_path):
     util.http_get('https://sbert.net/datasets/stsbenchmark.tsv.gz', sts_dataset_path)
 
 
-
-
 # Read the dataset
-model_name = 'bert-base-nli-mean-tokens'
+# model_name = 'training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32'
+model_name = 'sci_bert_nil'
 train_batch_size = 16
 num_epochs = 4
 model_save_path = 'output/training_stsbenchmark_continue_training-'+model_name+'-'+datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-
-
 # Load a pre-trained sentence transformer model
-model = SentenceTransformer(model_name)
-
+# model = SentenceTransformer(model_name)
+model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
 # Convert the dataset to a DataLoader ready for training
 logging.info("Read STSbenchmark train dataset")
 
@@ -60,12 +57,10 @@ with gzip.open(sts_dataset_path, 'rt', encoding='utf8') as fIn:
         else:
             train_samples.append(inp_example)
 
-
 train_dataset = SentencesDataset(train_samples, model)
 train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=train_batch_size)
+
 train_loss = losses.CosineSimilarityLoss(model=model)
-
-
 # Development set: Measure correlation between cosine score and gold labels
 logging.info("Read STSbenchmark dev dataset")
 evaluator = EmbeddingSimilarityEvaluator.from_input_examples(dev_samples, name='sts-dev')

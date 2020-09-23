@@ -59,13 +59,13 @@ import expert_finding.models.propagation_tadw_model
 # import expert_finding.models.bert_panoptic_model
 # import expert_finding.models.gvnrt_expert_model
 # import expert_finding.models.pre_ane_model
-# import expert_finding.models.hybrid_voting_model
+import expert_finding.models.hybrid_voting_model
 
 # model = expert_finding.models.random_model.Model()
 # model = expert_finding.models.propagation_tadw_model.Model()
 # model = expert_finding.models.voting_model.Model()
 
-model = expert_finding.models.bert_model.Model()
+model = expert_finding.models.voting_model.Model()
 
 # Run an evaluation
 eval_batches, merged_eval = expert_finding.evaluation.run(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags)
