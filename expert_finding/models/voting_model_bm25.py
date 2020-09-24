@@ -1,9 +1,10 @@
 import scipy.sparse
+from rank_bm25 import BM25Okapi
+from rank_bm25 import BM25Plus
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import logging
 import scipy
-
 logger = logging.getLogger()
 
 class Model:
@@ -13,6 +14,7 @@ class Model:
 
     def fit(self, A_da, A_dd, T):
         self.A_da = A_da
+        self.T = T
         maxLen = 0;
         for d in T:
             maxLen = max(maxLen, len(d.split()))
@@ -25,12 +27,17 @@ class Model:
         # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
         # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
         # bert_model = SentenceTransformer("roberta-large-nli-stsb-mean-tokens")
+        tokenized_corpus = [doc.split(" ") for doc in T]
+        self.bm25 = BM25Plus(tokenized_corpus)
+
         self.docs_vectors = bert_model.encode(T)
 
-    def predict(self, d, mask=None):
-        query_vector = self.docs_vectors[d]
-        documents_scores = np.squeeze(query_vector.dot(self.docs_vectors.T))
 
+    def predict(self, d, mask=None):
+        # query_vector = self.docs_vectors[d]
+        tokenized_query = self.T[d].split(" ")
+        documents_scores = self.bm25.get_scores(tokenized_query)
+        # documents_scores = np.squeeze(query_vector.dot(self.docs_vectors.T))
         # documents_scores = np.squeeze(query_vector.dot(self.docs_vectors.T).A)
         documents_sorting_indices = documents_scores.argsort()[::-1]
         document_ranks = documents_sorting_indices.argsort() + 1
