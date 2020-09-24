@@ -3,14 +3,24 @@ import expert_finding.metrics
 import logging
 
 import matplotlib
-matplotlib.use('Qt5Agg')
+
+# matplotlib.use('Qt5Agg')
 
 import matplotlib.pyplot as plt
 from numpy import interp
+
 # print("A B ", matplotlib.get_backend())
 fig_dim = (15.0, 12.0)
 
 logger = logging.getLogger()
+
+
+def run_all(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags, para, path=None):
+    eval_batches = mutil_run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, para)
+    merged_eval = merge_evaluations(eval_batches, tags)
+    # plot_evaluation(merged_eval, "hybrid_vote", para, path=path)
+    record_evaluation(merged_eval, "hybrid_vote", para, path=path)
+    return eval_batches, merged_eval
 
 
 def run(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags, path=None):
@@ -55,15 +65,28 @@ def get_empty_eval():
         }
     }
 
+
 def run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask):
     eval_batches = list()
     model.fit(A_da, A_dd, T)
     for i, d in enumerate(L_d_mask):
-        y_pred = model.predict(d, mask = L_a_mask)
+        y_pred = model.predict(d, mask=L_a_mask)
         y_true = np.squeeze(L_d[i].dot(L_a).astype(np.bool).A)
         eval = expert_finding.metrics.get_all_scores(y_true, y_pred)
         eval_batches.append(eval)
     return eval_batches
+
+
+def mutil_run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, para):
+    eval_batches = list()
+    model.fit(A_da, A_dd, T, para)
+    for i, d in enumerate(L_d_mask):
+        y_pred = model.predict(d, mask=L_a_mask)
+        y_true = np.squeeze(L_d[i].dot(L_a).astype(np.bool).A)
+        eval = expert_finding.metrics.get_all_scores(y_true, y_pred)
+        eval_batches.append(eval)
+    return eval_batches
+
 
 def merge_evaluations(eval_batches, tags):
     all_eval = get_empty_eval()
@@ -90,7 +113,16 @@ def merge_evaluations(eval_batches, tags):
     return all_eval
 
 
-def plot_evaluation(eval, path=None):
+def record_evaluation(eval, name, hybird=None, path=None):
+
+    title = " - ".join([i + ": " + str(j) for i, j in eval["info"].items()])
+    title += " - ".join([i + "={0:.3f}".format(j) for i, j in eval["metrics"].items()])
+    f = "/home/lj/tmp/pycharm_project_463/scripts/result"
+    with open(f, "a") as file:
+        file.write(str(hybird["i"]) + "-" + str(hybird["j"]) + "-" + str(hybird["k"]) + ":" + title + "\n")
+
+
+def plot_evaluation(eval, name, hybird=None, path=None):
     precision, recall, thresholds_pr = eval["curves"]["precision"], eval["curves"]["recall"], eval["curves"][
         "thresholds_pr"]
     fpr, tpr, thresholds_roc = eval["curves"]["fpr"], eval["curves"]["tpr"], eval["curves"]["thresholds_roc"]
@@ -121,7 +153,13 @@ def plot_evaluation(eval, path=None):
     axarr[0].set_ylabel('Precision')
     axarr[0].set_ylim([-0.05, 1.05])
     axarr[0].set_xlim([-0.05, 1.05])
-    axarr[0].set_title("Precision Recall Curve")
+    if (hybird != None):
+        axarr[0].set_title(
+            "Precision Recall Curve" + str(name) + ":" + str(hybird["i"]) + ":" + str(hybird["j"]) + ":" + str(
+                hybird["k"]))
+    else:
+        axarr[0].set_titel("Precision Recall Curve")
+
     axarr[0].legend(loc="lower right")
 
     ###############
@@ -155,8 +193,12 @@ def plot_evaluation(eval, path=None):
 
     title = " - ".join([i + ": " + str(j) for i, j in eval["info"].items()]) + "\n"
     title += " - ".join([i + "={0:.3f}".format(j) for i, j in eval["metrics"].items()])
+    # f = "/home/lj/tmp/pycharm_project_463/scripts/result"
+    # with open(f, "a") as file:
+    #     file.writelines(str(hybird["i"]) + "-" + str(hybird["j"])+ "-"+str(hybird["k"]) + ": " + title)
+
     plt.suptitle(title)
     if path is None:
         plt.show()
     else:
-        plt.savefig(path)
+        plt.savefig(path + "/" + str(hybird["i"]) + "-" + str(hybird["j"]))

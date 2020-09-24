@@ -61,12 +61,27 @@ import expert_finding.models.propagation_tadw_model
 # import expert_finding.models.pre_ane_model
 import expert_finding.models.hybrid_voting_model
 import expert_finding.models.hybrid_propagation_model
+
 # model = expert_finding.models.random_model.Model()
 # model = expert_finding.models.propagation_tadw_model.Model()
 # model = expert_finding.models.voting_model.Model()
+hybird = {}
+# hybird["i"] = [1, 2, 3, 4, 5, 10, 20]
+# hybird["j"] = [1, 2, 3, 10, 20]
+hybird["k"] = [9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 model = expert_finding.models.hybrid_voting_model.Model()
+mn = "hybrid_vote"
+path = "/home/lj/tmp/pycharm_project_463/scripts/plots"
 # Run an evaluation
-eval_batches, merged_eval = expert_finding.evaluation.run(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags)
+# eval_batches, merged_eval = expert_finding.evaluation.run(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags)
+para = {}
+para["i"] = 1
+para["j"] = 1
+for k in hybird["k"]:
+    para["k"] = k
+    eval_batches, merged_eval = expert_finding.evaluation.run_all(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask,
+                                                                  tags, para=para, path=path)
+
 # This last function actually performs 3 sub functions:
 
 # # 1) run all available querries and compute the metrics for each of them

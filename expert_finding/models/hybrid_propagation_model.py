@@ -29,15 +29,15 @@ class Model:
         # self.vocab = expert_finding.preprocessing.text.dictionary.Dictionary(T, min_df=5, max_df_ratio=0.25)
         logger.debug("Building tfidf vectors")
         # self.docs_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_dictionary(self.vocab)
+        self.vocab = expert_finding.preprocessing.text.dictionary.Dictionary(T, min_df=5, max_df_ratio=0.25)
 
-        # bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
         bert_model = SentenceTransformer(
             "/home/lj/tmp/pycharm_project_463/tests/output/training_stsbenchmark_continue_training-sci_bert_nil-2020-09-22_08-50-29")
+        bert_model._first_module().max_seq_length = 500
         # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
         # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
-        # bert_model = SentenceTransformer("roberta-large-nli-stsb-mean-tokens")
-        bert_model._first_module().max_seq_length = 500
-        self.docs_vectors = bert_model.encode(T)
+        self.embedding_docs_vectors = normalize(bert_model.encode(T), norm='l2', axis=1)
+        self.tfidf_docs_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_dictionary(self.vocab)
         D = self.A_da.shape[0]
         C = self.A_da.shape[1]
 
@@ -50,10 +50,16 @@ class Model:
         self.bigraph = normalize(self.bigraph, axis=0, norm='l1')
 
     def predict(self, d, mask=None):
-        query_vector = self.docs_vectors[d]
+        # query_vector = self.docs_vectors[d]
         C = self.A_da.shape[1]
-        # Create jumping vector
-        Pd = np.squeeze(query_vector.dot(self.docs_vectors.T)) + np.squeeze(query_vector.dot(self.docs_vectors.T).A)
+        # Pd = np.squeeze(query_vector.dot(self.docs_vectors.T)) + np.squeeze(query_vector.dot(self.docs_vectors.T).A)
+        query_vector_idf = self.tfidf_docs_vectors[d]
+        query_vector_emb = self.embedding_docs_vectors[d]
+
+        # 87/100
+        Pd =  np.squeeze(query_vector_idf.dot(self.tfidf_docs_vectors.T).A) + np.squeeze(
+           0.5 *query_vector_emb.dot(self.embedding_docs_vectors.T))
+
 
         if Pd.sum() > 0:
             Pd = Pd / Pd.sum()
