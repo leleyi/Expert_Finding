@@ -4,7 +4,7 @@ import logging
 
 import matplotlib
 
-# matplotlib.use('Qt5Agg')
+#matplotlib.use('Qt5Agg')
 
 import matplotlib.pyplot as plt
 from numpy import interp
@@ -26,9 +26,8 @@ def run_all(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags, para, path
 def run(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags, path=None):
     eval_batches = run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask)
     merged_eval = merge_evaluations(eval_batches, tags)
-    plot_evaluation(merged_eval, path=path)
+    plot_evaluation(merged_eval,"triples", path="/home/lj/tmp/pycharm_project_463/scripts/plots")
     return eval_batches, merged_eval
-
 
 def get_empty_eval():
     return {
@@ -158,7 +157,7 @@ def plot_evaluation(eval, name, hybird=None, path=None):
             "Precision Recall Curve" + str(name) + ":" + str(hybird["i"]) + ":" + str(hybird["j"]) + ":" + str(
                 hybird["k"]))
     else:
-        axarr[0].set_titel("Precision Recall Curve")
+        axarr[0].set_title("Precision Recall Curve")
 
     axarr[0].legend(loc="lower right")
 
@@ -201,4 +200,4 @@ def plot_evaluation(eval, name, hybird=None, path=None):
     if path is None:
         plt.show()
     else:
-        plt.savefig(path + "/" + str(hybird["i"]) + "-" + str(hybird["j"]))
+        plt.savefig(path + "/" + "pic")

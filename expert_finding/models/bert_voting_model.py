@@ -20,7 +20,9 @@ class Model:
         # bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
         # "scripts/continue/output/training_dblpbert-base-uncased-2020-09-14_19-25-37"
         # bert_model = SentenceTransformer('preprocessing/train_model/output/training_stsbenchmark_avg_word_embeddings-2020-08-20_14-02-24')
-        bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_stsbenchmark_continue_training-sci_bert_nil-2020-09-22_08-50-29")
+        # bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_stsbenchmark_continue_training-sci_bert_nil-2020-09-22_08-50-29")
+        # bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/finetune-batch-hard-trec-distilbert-base-nli-stsb-mean-tokens-2020-09-25_12-18-29")
+        bert_model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training-wikipedia-sections_triples")
         bert_model._first_module().max_seq_length = 500
         # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
         # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
