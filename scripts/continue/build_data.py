@@ -38,7 +38,7 @@ matrix = A_dd.toarray()
 
 
 def bulidPos():
-    pos = open('pos_doc_doc_04.txt', mode='w')
+    pos = open('document.txt', mode='w')
     for i, a in enumerate(matrix):
         for j, b in enumerate(a):
             if matrix[i][j]:
@@ -47,7 +47,7 @@ def bulidPos():
 
 
 def buildNeg():
-    neg = open('neg_doc_doc_0.txt', mode='w')
+    neg = open('.txt', mode='w')
     num = 0
     for i, a in enumerate(matrix):
         for j, b in enumerate(a):
@@ -61,50 +61,69 @@ def buildNeg():
     neg.close()
 
 
-
-
 # A_da
 def buildSameAuthor():
-    # 作者的所有文章.
+    # authors documents
     matrix = A_da.toarray()
-    lists = [[] for i in range(707)]  # 创建
+    lists = [[] for i in range(708)]  # 创建
     # maxValue = 0
-    pos = open('pos_doc_auth_07.txt', mode='w')
+    pos = open('author_docs.txt', mode='w')
     for i, a in enumerate(matrix):
         for j, b in enumerate(a):
             if matrix[i][j]:
                 # maxValue= max(maxValue, j)
                 lists[j].append(i)
     print("lists is:", lists)
-    # print(maxValue)
-    for list in lists:
-        for cur in list:
-            for to in list:
-                if cur==to: continue
-                else:
-                    pos.writelines(str(T[cur]) + '\t' + str(T[to]) + '\t' + "0.7" + '\n')
+
+    for i, a in enumerate(lists):
+        for j, b in enumerate(a):
+            pos.write(str(i) +'\t' + str(b) + '\t' + "1" '\n')
     pos.close()
+
+    # author_doc_list = open('author_doc_list.txt', mode='w')
+    # for i, a in enumerate(lists):
+    #     string = str(i) + '\t'
+    #     for j, b in enumerate(a):
+    #         string += ' ' + str(b)
+    #     author_doc_list.write(string + '\n')
+    # author_doc_list.close()
+
+
+
 def buildCo():
-    # 文章的共同创作者.一篇文章的所有作者.
+    # document _ authors
+    #pos = open('docs_author.txt', mode='w')
     matrix = A_da.toarray()
+    docs_author_list = open('docs_author_list.txt', mode='w')
     lists = [[] for i in range(1641)]  #
     for i, a in enumerate(matrix):
+        string = str(i) + '\t'
         for j, b in enumerate(a):
             if matrix[i][j]:
-                lists[i].append(j)
-
+                # lists[i].append(j)
+                string += ' ' + str(j)
+        docs_author_list.write(string + '\n')
+    docs_author_list.close()
+    # for list in lists:
+    #     for cur in list:
+    #         for to in list:
+    #             if cur == to:
+    #                 continue
+    #             else:
+    #                 pos.writelines(str(cur) + '\t' + str(to) + '\t' + "1" + '\n')
+    # pos.close()
 
     print("list is", lists)
 
+
 # buildNeg()
 # bulidPos()
-# buildSameAuthor()
-
+buildSameAuthor()
 # buildCo()
-same = pd.read_table('./to_csv.txt', sep='\t', header=None)
-df = shuffle(same)
-print(same.head())
-df.to_csv("./continue_train.csv",  header=False)
+# same = pd.read_table('./to_csv.txt', sep='\t', header=None)
+# df = shuffle(same)
+# print(same.head())
+# df.to_csv("./continue_train.csv",  header=False)
 
 """
 A_da : adjacency matrix of the document-candidate network (scipy.sparse.csr_matrix)
