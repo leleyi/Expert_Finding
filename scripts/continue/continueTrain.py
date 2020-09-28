@@ -23,6 +23,15 @@ import os
 import gzip
 import csv
 import pandas as pd
+import expert_finding.io
+import expert_finding.evaluation
+import expert_finding.models.random_model
+
+import expert_finding.models.voting_model
+import expert_finding.models.bert_propagation_model
+
+import os
+import logging
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -31,30 +40,30 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-
+A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
 # Check if dataset exsist. If not, download and extract  it
 # You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
-model_name = 'bert-base-uncased'
+model_name = 'sci_bert_nil_sts'
 # Read the dataset
 train_batch_size = 8
 num_epochs = 4
 #model_save_path = 'output/training_dblp' + model_name.replace("/", "-") + '-' + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-model_save_path = 'output/training_dblp1' + model_name.replace("/", "-")
+model_save_path = 'output/doc_doc' + model_name.replace("/", "-")
 
 # Use Huggingface/transformers model (like BERT, RoBERTa, XLNet, XLM-R) for mapping tokens to embeddings
-model = SentenceTransformer(model_name)
+model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
 
 train_samples = []
 dev_samples = []
 test_samples = []
-with open("./continue_train.csv") as fIn:
+with open("./doc_doc.csv") as fIn:
     reader = csv.reader(fIn)#quoting=csv.QUOTE_NONE)
     for row in reader:
         # print(type(row))
-        print(row)
-        score = float(row[3]) / 1.0  # Normalize score to range 0 ... 1
-        print(score)
-        inp_example = InputExample(texts=[str(row[1]), str(row[2])], label=score)
+        # print(row)
+        # score = float(row[3]) / 1.0  # Normalize score to range 0 ... 1
+        # print(score)
+        inp_example = InputExample(texts=[str(T[int(row[0])]), str(T[int(row[1])])], label=0.8)
         train_samples.append(inp_example)
 
 train_dataset = SentencesDataset(train_samples, model)
