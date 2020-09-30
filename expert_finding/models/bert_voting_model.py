@@ -5,7 +5,8 @@ import logging
 import scipy
 
 logger = logging.getLogger()
-path = "/home/lj/tmp/pycharm_project_463/tests/output/"
+path = "/home/lj/tmp/pycharm_project_463/scripts/continue/output"
+path2 = "/home/lj/tmp/pycharm_project_463/tests/output"
 class Model:
 
     def __init__(self):
@@ -18,7 +19,10 @@ class Model:
             maxLen = max(maxLen, len(d.split()))
         print(maxLen)
         # bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
-        bert_model = SentenceTransformer(path + "training_stsbenchmark_continue_training-sci_bert_nil-2020-09-22_08-50-29")
+        # bert_model = SentenceTransformer(path + "/doc_docsci_bert_nil_sts")
+        # bert_model = SentenceTransformer(path + "/training_0allenai-scibert_scivocab_uncased")
+        bert_model = SentenceTransformer(path + "/doc_doc_docsci_bert_08_04")
+        # bert_model = SentenceTransformer(path2 + "/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
         bert_model._first_module().max_seq_length = 500
 
         # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')

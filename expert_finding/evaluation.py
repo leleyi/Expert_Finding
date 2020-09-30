@@ -117,8 +117,10 @@ def record_evaluation(eval, name, hybird=None, path=None):
     title = " - ".join([i + ": " + str(j) for i, j in eval["info"].items()])
     title += " - ".join([i + "={0:.3f}".format(j) for i, j in eval["metrics"].items()])
     f = "/home/lj/tmp/pycharm_project_463/scripts/result"
+    res = str(hybird["i"]) + "-" + str(hybird["j"]) + "-" + str(hybird["k"]) + ":" + title + "\n"
+    print(res)
     with open(f, "a") as file:
-        file.write(str(hybird["i"]) + "-" + str(hybird["j"]) + "-" + str(hybird["k"]) + ":" + title + "\n")
+        file.write(res)
 
 
 def plot_evaluation(eval, name, hybird=None, path=None):
@@ -195,7 +197,7 @@ def plot_evaluation(eval, name, hybird=None, path=None):
     # f = "/home/lj/tmp/pycharm_project_463/scripts/result"
     # with open(f, "a") as file:
     #     file.writelines(str(hybird["i"]) + "-" + str(hybird["j"])+ "-"+str(hybird["k"]) + ": " + title)
-
+    print(title)
     plt.suptitle(title)
     if path is None:
         plt.show()

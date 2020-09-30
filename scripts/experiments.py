@@ -3,7 +3,7 @@ An example script to use expert_finding as a package. Its shows how to load a da
 """
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+os.environ['CUDA_VISIBLE_DEVICES'] = "1"
 import expert_finding.io
 import expert_finding.evaluation
 import expert_finding.models.random_model
