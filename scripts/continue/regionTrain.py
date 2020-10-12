@@ -16,21 +16,10 @@ import math
 from sentence_transformers import SentenceTransformer, SentencesDataset, LoggingHandler, losses, models, util
 from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
 from sentence_transformers.readers import STSBenchmarkDataReader, InputExample
-import logging
-from datetime import datetime
-import sys
-import os
-import gzip
 import csv
-import pandas as pd
 import expert_finding.io
-import expert_finding.evaluation
-import expert_finding.models.random_model
-
-import expert_finding.models.voting_model
 import expert_finding.models.bert_propagation_model
 
-import os
 import logging
 
 #### Just some code to print debug information to stdout
@@ -43,34 +32,28 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
 # Check if dataset exsist. If not, download and extract  it
 # You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
-model_name = 'sci_bert_nil_sts_1_0'
+model_name = 'sci_bert_1_0'
 #Read the dataset
 train_batch_size = 16
 num_epochs = 4
 #model_save_path = 'output/training_dblp' + model_name.replace("/", "-") + '-' + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 model_save_path = 'output/doc_doc' + model_name.replace("/", "-")
 
+
+model_name = 'allenai/scibert_scivocab_uncased'
+
+
+
 # Use Huggingface/transformers model (like BERT, RoBERTa, XLNet, XLM-R) for mapping tokens to embeddings
-model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
+word_embedding_model = models.Transformer(model_name)
 
-# model_name = 'allenai/scibert_scivocab_uncased'
-# Read the dataset
-# train_batch_size = 16
+# Apply mean pooling to get one fixed sized sentence vector
+pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),
+                               pooling_mode_mean_tokens=True,
+                               pooling_mode_cls_token=False,
+                               pooling_mode_max_tokens=False)
 
-
-# model_save_path = 'output/training_'+model_name.replace("/", "-")
-#
-#
-# # Use Huggingface/transformers model (like BERT, RoBERTa, XLNet, XLM-R) for mapping tokens to embeddings
-# word_embedding_model = models.Transformer(model_name)
-#
-# # Apply mean pooling to get one fixed sized sentence vector
-# pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),
-#                                pooling_mode_mean_tokens=True,
-#                                pooling_mode_cls_token=False,
-#                                pooling_mode_max_tokens=False)
-#
-# model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
+model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
 
 
 

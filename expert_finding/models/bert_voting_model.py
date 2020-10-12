@@ -21,7 +21,7 @@ class Model:
         # bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
         # bert_model = SentenceTransformer(path + "/doc_docsci_bert_nil_sts")
         # bert_model = SentenceTransformer(path + "/training_0allenai-scibert_scivocab_uncased")
-        bert_model = SentenceTransformer(path + "/doc_doc_docsci_bert_08_04")
+        bert_model = SentenceTransformer(path + "/doc_doc_docsci_bert_08_02")
         # bert_model = SentenceTransformer(path2 + "/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
         bert_model._first_module().max_seq_length = 500
 
