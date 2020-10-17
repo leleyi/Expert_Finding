@@ -48,7 +48,7 @@ model_name = 'sci_bert_nil_sts_1_0'
 train_batch_size = 16
 num_epochs = 4
 #model_save_path = 'output/training_dblp' + model_name.replace("/", "-") + '-' + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-model_save_path = 'output/doc_doc' + model_name.replace("/", "-")
+model_save_path = 'output/doc_doc_sci_bert_triples_nil_sts'
 
 # Use Huggingface/transformers model (like BERT, RoBERTa, XLNet, XLM-R) for mapping tokens to embeddings
 model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")

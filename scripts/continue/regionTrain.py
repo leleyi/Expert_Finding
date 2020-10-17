@@ -32,7 +32,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
 # Check if dataset exsist. If not, download and extract  it
 # You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
-model_name = 'sci_bert_1_0'
+model_name = 'sci_bert'
 #Read the dataset
 train_batch_size = 16
 num_epochs = 4

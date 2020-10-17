@@ -4,7 +4,7 @@ import logging
 
 import matplotlib
 
-#matplotlib.use('Qt5Agg')
+# matplotlib.use('Qt5Agg')
 
 import matplotlib.pyplot as plt
 from numpy import interp
@@ -26,8 +26,18 @@ def run_all(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags, para, path
 def run(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags, path=None):
     eval_batches = run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask)
     merged_eval = merge_evaluations(eval_batches, tags)
-    plot_evaluation(merged_eval,"triples", path="/home/lj/tmp/pycharm_project_463/scripts/plots")
+    plot_evaluation(merged_eval, "triples", path="/home/lj/tmp/pycharm_project_463/scripts/plots")
     return eval_batches, merged_eval
+
+
+def run_multi(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags, para=None, model_name=None):
+    eval_batches = mutil_run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, para=para,
+                                             model_name=model_name)
+    merged_eval = merge_evaluations(eval_batches, tags)
+
+    record_evaluation(merged_eval, name=model_name, para=para, model_name=model_name)
+    return eval_batches, merged_eval
+
 
 def get_empty_eval():
     return {
@@ -76,9 +86,24 @@ def run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask):
     return eval_batches
 
 
-def mutil_run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, para):
+def mutil_times_run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask):
     eval_batches = list()
-    model.fit(A_da, A_dd, T, para)
+    model.fit(A_da, A_dd, T)
+    for i, d in enumerate(L_d_mask):
+        y_pred = model.predict(d, mask=L_a_mask)
+        y_true = np.squeeze(L_d[i].dot(L_a).astype(np.bool).A)
+        eval = expert_finding.metrics.get_all_scores(y_true, y_pred)
+        eval_batches.append(eval)
+    return eval_batches
+
+
+def mutil_run_all_evaluations(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, para, model_name):
+    eval_batches = list()
+    if para != None:
+        model.fit(A_da, A_dd, T, para=para, model_name=model_name)
+    else:
+        model.fit(A_da, A_dd, T, model_name=model_name)
+
     for i, d in enumerate(L_d_mask):
         y_pred = model.predict(d, mask=L_a_mask)
         y_true = np.squeeze(L_d[i].dot(L_a).astype(np.bool).A)
@@ -112,18 +137,18 @@ def merge_evaluations(eval_batches, tags):
     return all_eval
 
 
-def record_evaluation(eval, name, hybird=None, path=None):
-
+def record_evaluation(eval, name, hybird=None, para=None, model_name=None):
     title = " - ".join([i + ": " + str(j) for i, j in eval["info"].items()])
     title += " - ".join([i + "={0:.3f}".format(j) for i, j in eval["metrics"].items()])
-    f = "/home/lj/tmp/pycharm_project_463/scripts/result"
-    res = str(hybird["i"]) + "-" + str(hybird["j"]) + "-" + str(hybird["k"]) + ":" + title + "\n"
+    res = model_name + "->" + str(int(para["k"] * 10)) + ":" + str(int((1 - para['k']) * 10)) + ":" + title + "\n"
+
     print(res)
-    with open(f, "a") as file:
-        file.write(res)
+    #f = "/home/lj/tmp/pycharm_project_463/scripts/result"
+    # with open(f, "a") as file:
+    #     file.write(res)
 
 
-def plot_evaluation(eval, name, hybird=None, path=None):
+def plot_evaluation(eval, name, hybird=None, para=None, model_name=None):
     precision, recall, thresholds_pr = eval["curves"]["precision"], eval["curves"]["recall"], eval["curves"][
         "thresholds_pr"]
     fpr, tpr, thresholds_roc = eval["curves"]["fpr"], eval["curves"]["tpr"], eval["curves"]["thresholds_roc"]
@@ -197,9 +222,10 @@ def plot_evaluation(eval, name, hybird=None, path=None):
     # f = "/home/lj/tmp/pycharm_project_463/scripts/result"
     # with open(f, "a") as file:
     #     file.writelines(str(hybird["i"]) + "-" + str(hybird["j"])+ "-"+str(hybird["k"]) + ": " + title)
-    print(title)
+    parameter = str(int(para['k'] * 10)) + ":" + str(int(1 - para['k'] * 10))
+    print(model_name + ": " + parameter + ": " + title)
     plt.suptitle(title)
-    if path is None:
-        plt.show()
-    else:
-        plt.savefig(path + "/" + "pic")
+    # if path is None:
+    #     plt.show()
+    # else:
+    #     plt.savefig(path + "/" + "pic")

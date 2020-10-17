@@ -13,7 +13,8 @@ from datetime import datetime
 import os
 import gzip
 import csv
-
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "1"
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -30,16 +31,13 @@ if not os.path.exists(sts_dataset_path):
 
 # Read the dataset
 # model_name = 'training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32'
-model_name = 'sci_bert_nil'
+# You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
+model_name = 'sci_bert_nil_sts'
+path = "/home/lj/tmp/pycharm_project_463/scripts/continue/output"
 train_batch_size = 16
 num_epochs = 4
-model_save_path = 'output/training_stsbenchmark_continue_training-'+model_name+'-'+datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-# Load a pre-trained sentence transformer model
-# model = SentenceTransformer(model_name)
-model = SentenceTransformer("/home/lj/tmp/pycharm_project_463/tests/output/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
-# Convert the dataset to a DataLoader ready for training
-logging.info("Read STSbenchmark train dataset")
+model_save_path = 'output/doc_doc_sci_bert_triples_nil_sts'
+model = SentenceTransformer(path + "/doc_doc_sci_bert_triples")
 
 train_samples = []
 dev_samples = []

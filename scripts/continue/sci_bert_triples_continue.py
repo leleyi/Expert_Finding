@@ -16,7 +16,7 @@ import expert_finding.models.bert_propagation_model
 import csv
 import logging
 import os
-
+path = "/home/lj/tmp/pycharm_project_463/scripts/continue/output"
 A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
 
 logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -25,34 +25,25 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 
 # You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
-model_name = 'sci_bert_triples'
+model_name = 'doc_doc_sci_bert_triples_lexical'
 
 train_batch_size = 16
 num_epochs = 4
-model_save_path = 'output/doc_doc_sci_bert_fusion_triples'
-
-model_name = 'allenai/scibert_scivocab_uncased'
+model_save_path = 'output/doc_doc_sci_bert_triples_lexical'
 
 # Use Huggingface/transformers model (like BERT, RoBERTa, XLNet, XLM-R) for mapping tokens to embeddings
-word_embedding_model = models.Transformer(model_name)
+model = SentenceTransformer(path + "/doc_doc_sci_bert_triples")
 
-# Apply mean pooling to get one fixed sized sentence vector
-pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),
-                               pooling_mode_mean_tokens=True,
-                               pooling_mode_cls_token=False,
-                               pooling_mode_max_tokens=False)
-
-model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
 
 logging.info("Read Triplet train dataset")
 train_samples = []
-with open("./datasets/fusion_triples.csv") as fIn:
+with open("./lexical.csv") as fIn:
     reader = csv.reader(fIn)
     for i, row in enumerate(reader):
         train_samples.append(
-            InputExample(texts=[str(T[int(row[1])]), str(T[int(row[2])]), str(T[int(row[3])])], label=0))
+            InputExample(texts=[str(T[int(row[0])]), str(T[int(row[1])]), str(T[int(row[2])])], label=0))
 
-train_dataset = SentencesDataset(train_samples, model = model)
+train_dataset = SentencesDataset(train_samples, model=model)
 
 train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=train_batch_size)
 train_loss = losses.TripletLoss(model=model)

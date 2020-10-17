@@ -6,28 +6,22 @@ import scipy
 
 logger = logging.getLogger()
 path = "/home/lj/tmp/pycharm_project_463/scripts/continue/output"
-path2 = "/home/lj/tmp/pycharm_project_463/tests/output"
 class Model:
 
     def __init__(self):
         pass
 
-    def fit(self, A_da, A_dd, T):
+    def fit(self, A_da, A_dd, T , model_path):
         self.A_da = A_da
-        maxLen = 0;
-        for d in T:
-            maxLen = max(maxLen, len(d.split()))
-        print(maxLen)
-        # bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
-        # bert_model = SentenceTransformer(path + "/doc_docsci_bert_nil_sts")
-        # bert_model = SentenceTransformer(path + "/training_0allenai-scibert_scivocab_uncased")
-        bert_model = SentenceTransformer(path + "/doc_doc_docsci_bert_08_02")
-        # bert_model = SentenceTransformer(path2 + "/training_nli_allenai-scibert_scivocab_uncased-2020-09-21_15-36-32")
-        bert_model._first_module().max_seq_length = 500
 
-        # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
-        # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
-        # bert_model = SentenceTransformer("roberta-large-nli-stsb-mean-tokens")
+        # bert_model = SentenceTransformer(path + "/sci_bert_nil")
+        # bert_model = SentenceTransformer(path + "/sci_bert_nil_sts")
+        # bert_model = SentenceTransformer(path + "/doc_doc_sci_bert_triples")
+        # bert_model = SentenceTransformer(path + "/doc_doc_sci_bert_nil_sts_triples")
+        # bert_model = SentenceTransformer(path + "/doc_doc_sci_bert_triples_nil_sts")
+        # bert_model = SentenceTransformer(path + "/doc_doc_sci_bert_triples_lexical")
+        bert_model = SentenceTransformer(path + model_path)
+        bert_model._first_module().max_seq_length = 500
         self.docs_vectors = bert_model.encode(T)
 
     def predict(self, d, mask=None):

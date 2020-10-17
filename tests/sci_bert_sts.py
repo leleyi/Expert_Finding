@@ -41,25 +41,13 @@ if not os.path.exists(sts_dataset_path):
 
 #You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
 # model_name = sys.argv[1] if len(sys.argv) > 1 else 'bert-base-uncased'
-model_name = 'allenai/scibert_scivocab_uncased'
 
-# Read the dataset
+model_name = 'sci_bert_nil_sts'
+path = "/home/lj/tmp/pycharm_project_463/scripts/continue/output"
 train_batch_size = 16
+model_save_path = 'output/doc_doc_sci_bert_triples_nil_sts'
 
-
-model_save_path = 'output/sci_bert_nil'
-
-
-# Use Huggingface/transformers model (like BERT, RoBERTa, XLNet, XLM-R) for mapping tokens to embeddings
-word_embedding_model = models.Transformer(model_name)
-
-# Apply mean pooling to get one fixed sized sentence vector
-pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),
-                               pooling_mode_mean_tokens=True,
-                               pooling_mode_cls_token=False,
-                               pooling_mode_max_tokens=False)
-
-model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
+model = SentenceTransformer(path + "/doc_doc_sci_bert_triples")
 
 
 # Read the AllNLI.tsv.gz file and create the training dataset
