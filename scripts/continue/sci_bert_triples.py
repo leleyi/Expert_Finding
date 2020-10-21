@@ -25,11 +25,9 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 
 # You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
-model_name = 'sci_bert_triples'
-
 train_batch_size = 16
 num_epochs = 4
-model_save_path = 'output/doc_doc_sci_bert_fusion_triples'
+model_save_path = 'output/doc_doc_sci_bert'
 
 model_name = 'allenai/scibert_scivocab_uncased'
 
