@@ -12,7 +12,7 @@ import os
 import logging
 
 logger = logging.getLogger()
-
+path = "/home/lj/tmp/pycharm_project_463/scripts/continue/output"
 
 class Model:
 
@@ -21,23 +21,18 @@ class Model:
         self.min_error = min_error
         self.eta = 0.5
 
-    def fit(self, A_da, A_dd, T):
+
+    def fit(self, A_da, A_dd, T, para=None, model_name=None):
         self.A_da = A_da
         self.A_dd = A_dd
+        self.Para = para
+        self.vocab = expert_finding.preprocessing.text.dictionary.Dictionary(T, min_df=20, max_df_ratio=0.25)
 
-        logger.debug("Building vocab")
-        # self.vocab = expert_finding.preprocessing.text.dictionary.Dictionary(T, min_df=5, max_df_ratio=0.25)
-        logger.debug("Building tfidf vectors")
-        # self.docs_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_dictionary(self.vocab)
-        self.vocab = expert_finding.preprocessing.text.dictionary.Dictionary(T, min_df=5, max_df_ratio=0.25)
-
-        bert_model = SentenceTransformer(
-            "/home/lj/tmp/pycharm_project_463/tests/output/training_stsbenchmark_continue_training-sci_bert_nil-2020-09-22_08-50-29")
+        bert_model = SentenceTransformer(path + model_name);
         bert_model._first_module().max_seq_length = 500
-        # bert_model = SentenceTransformer('roberta-base-nli-stsb-mean-tokens')
-        # bert_model = SentenceTransformer('bert-base-nli-stsb-wkpooling')
         self.embedding_docs_vectors = normalize(bert_model.encode(T), norm='l2', axis=1)
         self.tfidf_docs_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_dictionary(self.vocab)
+
         D = self.A_da.shape[0]
         C = self.A_da.shape[1]
 
@@ -56,9 +51,9 @@ class Model:
         query_vector_idf = self.tfidf_docs_vectors[d]
         query_vector_emb = self.embedding_docs_vectors[d]
 
+        z = self.Para["k"]
         # 87/100
-        Pd =  np.squeeze(query_vector_idf.dot(self.tfidf_docs_vectors.T).A) + np.squeeze(
-           0.5 *query_vector_emb.dot(self.embedding_docs_vectors.T))
+        Pd = z * np.squeeze(query_vector_idf.dot(self.tfidf_docs_vectors.T).A) + (1 - z) * np.squeeze(query_vector_emb.dot(self.embedding_docs_vectors.T))
 
 
         if Pd.sum() > 0:
