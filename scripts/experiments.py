@@ -32,8 +32,8 @@ logger = logging.getLogger()
 
 
 # Load one dataset
-A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
-# A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("academia.stackexchange.com")
+# A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
+A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("academia.stackexchange.com")
 # A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("mathoverflow.net")
 """
 A_da : adjacency matrix of the document-candidate network (scipy.sparse.csr_matrix)
@@ -77,7 +77,8 @@ path = "/home/lj/tmp/pycharm_project_463/scripts/plots"
 para = {}
 para["i"] = 1
 para["j"] = 1
-hybird["k"] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+# embedding + idf
+# hybird["k"] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 for k in hybird["k"]:
     para["k"] = k
     eval_batches, merged_eval = expert_finding.evaluation.run_all(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask,

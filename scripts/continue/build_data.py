@@ -10,12 +10,13 @@ from sklearn.utils import shuffle
 
 import os
 import logging
+import random
 
 logger = logging.getLogger()
 
 # Load one dataset
-A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
-# A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("academia.stackexchange.com")
+# A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
+A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("academia.stackexchange.com")
 # A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("mathoverflow.net")
 
 """
@@ -24,7 +25,7 @@ A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_datas
 
 # print(A_da.shape[1])
 # print("------")
-print(A_da)
+# print(A_da)
 # print("------")
 # print(A_dd)
 # print(len(T))
@@ -65,9 +66,9 @@ def buildNeg():
 def buildSameAuthor():
     # authors documents
     matrix = A_da.toarray()
-    lists = [[] for i in range(708)]  # 创建
+    lists = [[] for i in range(6030)]  # 创建
     # maxValue = 0
-    pos = open('author_docs.txt', mode='w')
+    pos = open('academia_author_docs.txt', mode='w')
     for i, a in enumerate(matrix):
         for j, b in enumerate(a):
             if matrix[i][j]:
@@ -77,16 +78,16 @@ def buildSameAuthor():
 
     for i, a in enumerate(lists):
         for j, b in enumerate(a):
-            pos.write(str(i) +'\t' + str(b) + '\t' + "1" '\n')
+            pos.write(str(i) +'\t' + str(b) + '\n')
     pos.close()
 
-    # author_doc_list = open('author_doc_list.txt', mode='w')
-    # for i, a in enumerate(lists):
-    #     string = str(i) + '\t'
-    #     for j, b in enumerate(a):
-    #         string += ' ' + str(b)
-    #     author_doc_list.write(string + '\n')
-    # author_doc_list.close()
+    author_doc_list = open('author_academia_doc_list.txt', mode='w')
+    for i, a in enumerate(lists):
+        string = str(i) + '\t'
+        for j, b in enumerate(a):
+            string += ' ' + str(b)
+        author_doc_list.write(string + '\n')
+    author_doc_list.close()
 
 
 
@@ -94,8 +95,10 @@ def buildCo():
     # document _ authors
     #pos = open('docs_author.txt', mode='w')
     matrix = A_da.toarray()
-    docs_author_list = open('docs_author_list.txt', mode='w')
-    lists = [[] for i in range(1641)]  #
+
+    docs_author_list = open('academia_docs_author_list.txt', mode='w')
+    lists = [[] for i in range(20800)]
+
     for i, a in enumerate(matrix):
         string = str(i) + '\t'
         for j, b in enumerate(a):
@@ -112,13 +115,12 @@ def buildCo():
     #             else:
     #                 pos.writelines(str(cur) + '\t' + str(to) + '\t' + "1" + '\n')
     # pos.close()
-
-    print("list is", lists)
+    print("list is", docs_author_list)
 
 
 # buildNeg()
 # bulidPos()
-buildSameAuthor()
+# buildSameAuthor()
 # buildCo()
 # same = pd.read_table('./to_csv.txt', sep='\t', header=None)
 # df = shuffle(same)
@@ -135,3 +137,33 @@ L_a : labels associated to the candidates (corresponding to A_da[:,L_d_mask]) (n
 L_a_mask : mask to select the labeled candidates (numpy.array)
 tags : names of the labels of expertise (numpy.array)
 """
+def build_triplet():
+    author_docs_list = pd.read_table('./author_academia_doc_list.txt', sep='\t', names=['author', 'document'])
+    # author_docs_list.
+    docs_author_list = pd.read_table('./academia_docs_author_list.txt', sep='\t', names=['document', 'author'])
+    # docs_author_list.iloc[:115]
+
+    ## concat
+    doc_triples = pd.DataFrame(columns=['A', 'POS', 'NEG'])
+    for i in range(len(docs_author_list)):
+        author_str = docs_author_list.loc[docs_author_list['document'] == i, 'author']
+        # print(author_str)
+        author_arr = author_str[i]  # 第i 篇文章的所有作者
+        relevant = set()
+        # for e in author_arr:
+        document_str = author_docs_list.loc[author_docs_list['author'] == author_arr, 'document']
+        document_arr = document_str[author_arr].split()  # 第 e 这个作者的所有文章。
+        for d in document_arr:
+            relevant.add(d)
+
+        negs = list(set(range(0, 20799)).difference(set(relevant)))
+
+        for to in relevant:
+            neg = random.choice(negs)
+            doc_triples = doc_triples.append(pd.DataFrame({'A': [i], 'POS': [to], 'NEG': [neg]}), ignore_index=True)
+
+        #docs_author_list.loc[i, 'documents'] = ','.join(relevant)
+
+        doc_triples.to_csv('academia_doc_triples.csv')
+
+build_triplet()

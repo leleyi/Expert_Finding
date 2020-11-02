@@ -45,15 +45,18 @@ import expert_finding.models.hybrid_voting_model
 # bert_model = SentenceTransformer(path + "/doc_doc_sci_bert_triples_nil_sts")
 # bert_model = SentenceTransformer(path + "/doc_doc_sci_bert_triples_lexical")
 model_list = [
-              '/sci_bert_nil',
-              '/sci_bert_nil_sts',
-              '/doc_doc_sci_bert_triples',
-              '/doc_doc_sci_bert_nil_sts_triples',
-              '/doc_doc_sci_bert_triples_nil_sts',
-              '/doc_doc_sci_bert_triples_lexical',
-              '/doc_doc_sci_bert_fusion_triples']
+              '/academia_doc_doc_sci_bert_triplet']
+              # '/sci_bert_nil',
+              # '/sci_bert_nil_sts',
+              # '/doc_doc_sci_bert_siamese',
+              # '/doc_doc_sci_bert_triples',
+              # '/doc_doc_sci_bert_nil_sts_triples',
+              # '/doc_doc_sci_bert_triples_nil_sts',
+              # '/doc_doc_sci_bert_triples_lexical',
+              # '/doc_doc_sci_bert_fusion_triples']
 
 import expert_finding.models.hybrid_propagation_model
+# model = expert_finding.models.hybrid_voting_model.Model()
 model = expert_finding.models.hybrid_propagation_model.Model()
 hybird = {}
 para = {}

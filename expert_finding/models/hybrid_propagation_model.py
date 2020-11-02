@@ -53,8 +53,7 @@ class Model:
 
         z = self.Para["k"]
         # 87/100
-        Pd = z * np.squeeze(query_vector_idf.dot(self.tfidf_docs_vectors.T).A) + (1 - z) * np.squeeze(query_vector_emb.dot(self.embedding_docs_vectors.T))
-
+        Pd = z * np.squeeze(query_vector_emb.dot(self.embedding_docs_vectors.T)) + (1 - z) * np.squeeze(query_vector_idf.dot(self.tfidf_docs_vectors.T).A)
 
         if Pd.sum() > 0:
             Pd = Pd / Pd.sum()

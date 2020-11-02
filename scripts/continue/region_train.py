@@ -9,7 +9,7 @@ python training_nli.py pretrained_transformer_model_name
 
 
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
 from torch.utils.data import DataLoader
 import math
@@ -29,16 +29,17 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
+# A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
+A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("academia.stackexchange.com")
 # Check if dataset exsist. If not, download and extract  it
 # You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
 model_name = 'sci_bert'
 #Read the dataset
 train_batch_size = 16
-num_epochs = 4
+num_epochs = 1
 #model_save_path = 'output/training_dblp' + model_name.replace("/", "-") + '-' + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-model_save_path = 'output/doc_doc' + model_name.replace("/", "-")
-
+# model_save_path = 'output/doc_doc_sci_bert_triples_lexical'
+model_save_path = 'output/academia_doc_doc_sci_bert_triplet'
 
 model_name = 'allenai/scibert_scivocab_uncased'
 
@@ -62,7 +63,7 @@ model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
 train_samples = []
 dev_samples = []
 test_samples = []
-with open("./doc_doc_all.csv") as fIn:
+with open("./datasets/doc_doc_all_08_01.csv") as fIn:
     reader = csv.reader(fIn)#quoting=csv.QUOTE_NONE)
     for i, row in enumerate(reader):
         # print(type(row))

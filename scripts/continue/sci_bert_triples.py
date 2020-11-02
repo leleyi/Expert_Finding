@@ -4,7 +4,7 @@ As corpus, we use the wikipedia sections dataset that was describd by Dor et al.
 """
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 from sentence_transformers.evaluation import TripletEvaluator
 from zipfile import ZipFile
 from torch.utils.data import DataLoader
@@ -17,8 +17,8 @@ import csv
 import logging
 import os
 
-A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
-
+# A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
+A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("academia.stackexchange.com")
 logging.basicConfig(format='%(asctime)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
                     level=logging.INFO,
@@ -26,8 +26,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 
 # You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
 train_batch_size = 16
-num_epochs = 4
-model_save_path = 'output/doc_doc_sci_bert'
+num_epochs = 2
+model_save_path = 'output/academia_doc_doc_sci_bert_triplet'
 
 model_name = 'allenai/scibert_scivocab_uncased'
 
@@ -44,9 +44,14 @@ model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
 
 logging.info("Read Triplet train dataset")
 train_samples = []
-with open("./datasets/fusion_triples.csv") as fIn:
+dev_samples = []
+with open("./datasets/academia_doc_triples.csv") as fIn:
     reader = csv.reader(fIn)
     for i, row in enumerate(reader):
+        if i % 10 == 0:
+            dev_samples.append(
+                InputExample(texts=[str(T[int(row[1])]), str(T[int(row[2])]), str(T[int(row[3])])], label=0))
+
         train_samples.append(
             InputExample(texts=[str(T[int(row[1])]), str(T[int(row[2])]), str(T[int(row[3])])], label=0))
 
@@ -56,7 +61,7 @@ train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=train_batc
 train_loss = losses.TripletLoss(model=model)
 
 
-evaluator = TripletEvaluator.from_input_examples(train_samples, name='dev')
+evaluator = TripletEvaluator.from_input_examples(dev_samples, name='dev')
 
 warmup_steps = int(len(train_dataset) * num_epochs / train_batch_size * 0.1)  # 10% of train data
 
