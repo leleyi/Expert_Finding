@@ -36,8 +36,6 @@ A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_datas
 # print(A_dd.toarray())
 
 matrix = A_dd.toarray()
-
-
 def bulidPos():
     pos = open('document.txt', mode='w')
     for i, a in enumerate(matrix):

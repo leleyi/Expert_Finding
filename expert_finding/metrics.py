@@ -78,9 +78,10 @@ def get_all_scores(y_true, y_score):
         "RR": get_reciprocal_rank(y_true, y_score),
         "P@5": get_precision_at_k(y_true, y_score, 5).item(),
         "P@10": get_precision_at_k(y_true, y_score, 10).item(),
+        "P@20": get_precision_at_k(y_true, y_score, 20).item(),
         "P@50": get_precision_at_k(y_true, y_score, 50).item(),
-        "P@100": get_precision_at_k(y_true, y_score, 100).item(),
-        "P@200": get_precision_at_k(y_true, y_score, 200).item(),
+        # "P@100": get_precision_at_k(y_true, y_score, 100).item(),
+        # "P@200": get_precision_at_k(y_true, y_score, 200).item(),
         "ROC AUC": get_roc_auc_score(y_true, y_score).item()
     }
 

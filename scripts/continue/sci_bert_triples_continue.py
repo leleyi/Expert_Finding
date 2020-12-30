@@ -29,10 +29,10 @@ model_name = 'doc_doc_sci_bert_triples_lexical'
 
 train_batch_size = 16
 num_epochs = 4
-model_save_path = 'output/doc_doc_sci_bert_triples_lexical'
+model_save_path = 'output/academia_author_triplet_sts'
 
 # Use Huggingface/transformers model (like BERT, RoBERTa, XLNet, XLM-R) for mapping tokens to embeddings
-model = SentenceTransformer(path + "/doc_doc_sci_bert_triples")
+model = SentenceTransformer(path + "/academia_author_triplet")
 
 
 logging.info("Read Triplet train dataset")
