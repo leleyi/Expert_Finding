@@ -292,8 +292,6 @@ class Model:
         for i in W_i[-20:]:
             print(words[i], "=", W_n[i])
 
-
-
     def plot_direct_topics(self):
         print("\n\n plot_direct_topics")
         words = self.vocab.ids_to_words
