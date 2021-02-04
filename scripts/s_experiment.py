@@ -20,6 +20,17 @@ logger = logging.getLogger()
 A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("dblp")
 # A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("academia.stackexchange.com")
 # A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags = expert_finding.io.load_dataset("mathoverflow.net")
+
+path = "/ddisk/lj/tmp/pycharm_project_332/expert_finding/resources/"
+encoder_path = "/ddisk/lj/DBLP/data/models"
+modle_list = ["sci_bert_nil_sts",
+              "academia_author_triplet",
+              "doc_doc_sci_bert_nil_sts_triples",
+              "doc_doc_sci_bert_triples_nil_sts"]
+
+with open(path + modle_list[0], "wb") as f:
+    pickle.dump(embedding_docs_vectors, f)
+
 """
 A_da : adjacency matrix of the document-candidate network (scipy.sparse.csr_matrix)
 A_dd : adjacency matrix of the document-document network (scipy.sparse.csr_matrix)
@@ -34,9 +45,5 @@ tags : names of the labels of expertise (numpy.array)
 # You can load a model
 
 import expert_finding.models.bert_voting_model
-
 model = expert_finding.models.bert_voting_model.Model()
 eval_batches, merged_eval = expert_finding.evaluation.run(model, A_da, A_dd, T, L_d, L_d_mask, L_a, L_a_mask, tags)
-
-
-

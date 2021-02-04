@@ -1,5 +1,4 @@
 import numpy as np
-import tensorflow as tf
 from .graph2gauss_utils import *
 from sklearn.preprocessing import normalize
 import expert_finding.preprocessing.text.dictionary
@@ -7,10 +6,15 @@ import expert_finding.preprocessing.text.vectorizers
 from sklearn.decomposition import TruncatedSVD
 import scipy.spatial.distance
 import numpy as np
+import expert_finding.language_models
 import scipy.sparse.linalg
 import logging
-logger = logging.getLogger()
 
+import tensorflow.compat.v1 as tf
+
+tf.disable_v2_behavior()
+# tf.reset_default_graph()
+logger = logging.getLogger()
 
 
 class Graph2Gauss:
@@ -23,6 +27,7 @@ class Graph2Gauss:
     Aleksandar Bojchevski
     Technical University of Munich
     """
+
     def __init__(self, A, X, L, K=1, n_hidden=None, max_iter=2000, tolerance=100, seed=0):
         """
         Parameters
@@ -53,12 +58,10 @@ class Graph2Gauss:
         self.X = tf.sparse_placeholder(tf.float32)
         self.feed_dict = {self.X: sparse_feeder(X)}
 
-
         self.N, self.D = X.shape
         self.L = L
         self.max_iter = max_iter
         self.tolerance = tolerance
-
 
         if n_hidden is None:
             n_hidden = [512]
@@ -75,7 +78,8 @@ class Graph2Gauss:
         self.__build_loss()
 
     def __build(self):
-        w_init = tf.contrib.layers.xavier_initializer
+        # w_init = tf.contrib.layers.xavier_initializer
+        w_init = tf.truncated_normal_initializer
 
         sizes = [self.D] + self.n_hidden
 
@@ -101,7 +105,6 @@ class Graph2Gauss:
         b_sigma = tf.get_variable(name='b_sigma', shape=[self.L], dtype=tf.float32, initializer=w_init())
         log_sigma = tf.matmul(encoded, W_sigma) + b_sigma
         self.sigma = tf.nn.elu(log_sigma) + 1 + 1e-14
-
 
     def __build_loss(self):
         hop_pos = tf.stack([self.triplets[:, 0], self.triplets[:, 1]], 1)
@@ -149,6 +152,7 @@ class Graph2Gauss:
         Returns
         -------
         """
+
         def gen():
             while True:
                 yield to_triplets(sample_all_hops(hops), scale_terms)
@@ -175,7 +179,7 @@ class Graph2Gauss:
             Tensorflow session used for training
         """
         for name in self.saved_vars:
-                sess.run(tf.assign(self.saved_vars[name][0], self.saved_vars[name][1]))
+            sess.run(tf.assign(self.saved_vars[name][0], self.saved_vars[name][1]))
 
     def train(self, gpu_list='0'):
         """
@@ -194,8 +198,13 @@ class Graph2Gauss:
 
         train_op = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(self.loss)
 
-        #sess = tf.Session(config=tf.ConfigProto(gpu_options=tf.GPUOptions(visible_device_list=gpu_list, allow_growth=True)))
-        sess = tf.Session()
+        sess = tf.Session(
+            config=tf.ConfigProto(gpu_options=tf.GPUOptions(visible_device_list='0', allow_growth=True),
+                                  log_device_placement=True))
+
+        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
+
+        # sess = tf.Session()
 
         sess.run(tf.global_variables_initializer())
 
@@ -215,25 +224,32 @@ class Graph2Gauss:
 
             if tolerance == 0:
                 break
-        
+
         if tolerance > 0:
             logger.warn('WARNING: Training might not have converged. Try increasing max_iter')
-                  
+
         self.__restore_vars(sess)
 
         return sess
 
+
 class Model:
-    def __init__(self, embedding_size=1024):
+    def __init__(self, embedding_size=512):
         self.embedding_size = embedding_size
         self.model = None
 
     def fit(self, X, M):
-        logger.debug("Building vocab")
+        # logger.debug("Building vocab")
+        print("Building vocab")
         self.vocab = expert_finding.preprocessing.text.dictionary.Dictionary(M, min_df=5, max_df_ratio=0.25)
-        logger.debug("Building tf vectors")
-        self.tf_vectors = normalize(expert_finding.preprocessing.text.vectorizers.get_tf_dictionary(self.vocab), norm='l1', axis=1)
-        logger.debug("Learning g2g")
+        # logger.debug("Building tf vectors")
+        print("Building tf vectors")
+        self.tf_vectors = expert_finding.preprocessing.text.vectorizers.get_tfidf_dictionary(self.vocab)
+        # logger.debug("Learning g2g")
+        print("Learning g2g")
+        # self.language_model = language_models.wrapper.LanguageModel(doc_rep_dir,
+        #                                                             type=self.type)
+
         self.model = Graph2Gauss(A=X, X=self.tf_vectors, L=self.embedding_size)
         self.sess = self.model.train()
         feed_dict = {self.model.X: sparse_feeder(self.tf_vectors)}
@@ -253,11 +269,8 @@ class Model:
     def predict(self, i, j):
         u = self.get_embeddings()[i]
         v = self.get_embeddings()[j]
-        return 1-scipy.spatial.distance.cosine(u,v)
+        return 1 - scipy.spatial.distance.cosine(u, v)
 
     def predict_new(self, Mi, Mj):
-        [u,v] = self.get_embeddings_new([Mi, Mj])
-        return 1-scipy.spatial.distance.cosine(u,v)
-
-
-
+        [u, v] = self.get_embeddings_new([Mi, Mj])
+        return 1 - scipy.spatial.distance.cosine(u, v)

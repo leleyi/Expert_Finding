@@ -7,6 +7,7 @@ logger = logging.getLogger()
 
 def load_dataset(dataset_name):
     npz_file = pkg_resources.resource_filename("expert_finding", 'resources/{0}.npz'.format(dataset_name))
+    print(npz_file)
     data = np.load(npz_file, allow_pickle=True)
     data_dict = dict()
     for k in data:

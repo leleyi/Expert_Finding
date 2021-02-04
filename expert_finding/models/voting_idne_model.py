@@ -6,6 +6,7 @@ import logging
 
 logger = logging.getLogger()
 
+
 class Model:
 
     def __init__(self):
@@ -24,7 +25,7 @@ class Model:
 
         self.docs_vectors = normalize(self.embeddings)
 
-    def predict(self, d, mask = None):
+    def predict(self, d, mask=None):
         query_vector = self.docs_vectors[d]
         documents_scores = np.squeeze(query_vector.dot(self.docs_vectors.T))
         documents_sorting_indices = documents_scores.argsort()[::-1]
@@ -36,8 +37,3 @@ class Model:
         if mask is not None:
             candidates_scores = candidates_scores[mask]
         return candidates_scores
-
-
-
-
-

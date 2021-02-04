@@ -102,6 +102,6 @@ model.fit(train_objectives=[(train_dataloader, train_loss)],
 #
 ##############################################################################
 print(model_save_path)
-# model = SentenceTransformer(model_save_path)
-# test_evaluator = EmbeddingSimilarityEvaluator.from_input_examples(test_samples, name='sts-test')
-# test_evaluator(model, output_path=model_save_path)
+model = SentenceTransformer(model_save_path)
+test_evaluator = EmbeddingSimilarityEvaluator.from_input_examples(test_samples, name='sts-test')
+test_evaluator(model, output_path=model_save_path)

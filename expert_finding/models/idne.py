@@ -5,6 +5,7 @@
 
 """
 import logging
+
 logger = logging.getLogger()
 import numpy as np
 import time
@@ -14,24 +15,31 @@ import expert_finding.preprocessing.text.vectorizers
 import expert_finding.models.data_generator
 import expert_finding.models.tools
 from expert_finding.models.transformer import activation_attention, cosine_loss
+
 warnings.filterwarnings('ignore')
 import matplotlib.pyplot as plt
 import scipy.spatial.distance
 import expert_finding.preprocessing.graph.random_walker
 import expert_finding.preprocessing.graph.window_slider
 
-
 from sklearn.preprocessing import normalize
 
 mpl_logger = logging.getLogger('matplotlib')
 mpl_logger.setLevel(logging.WARNING)
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 import tensorflow as tf
 
-tf.logging.set_verbosity(tf.logging.ERROR)  # or any {DEBUG, INFO, WARN, ERROR, FATAL}
-import tensorflow as tf
-if type(tf.contrib) != type(tf): tf.contrib._warning = None
+# tf.logging.set_verbosity(tf.logging.ERROR)  # or any {DEBUG, INFO, WARN, ERROR, FATAL}
+# import tensorflow as tf
+# if type(tf.contrib) != type(tf): tf.contrib._warning = None
+import tensorflow.compat.v1 as tf
+
+tf.disable_v2_behavior()
+# tf.reset_default_graph()
+logger = logging.getLogger()
+
 
 class TFModel():
     """
@@ -39,19 +47,18 @@ class TFModel():
     We declare the full pipeline (constants, variables, placeholders, operators, optimizer)
     """
 
-
     def __init__(self, num_words, embedding_size, number_incuding_points):
-
         self.W = tf.get_variable(
             "W",
-            initializer=tf.contrib.layers.variance_scaling_initializer(),
+            # initializer=tf.contrib.layers.variance_scaling_initializer(),
+            initializer=tf.truncated_normal_initializer(),
             shape=[num_words, embedding_size],
             dtype=tf.float32
         )
 
         self.inducing_points = tf.get_variable(
             "inducing_points",
-            initializer=tf.contrib.layers.variance_scaling_initializer(),
+            initializer=tf.truncated_normal_initializer(),
             shape=[number_incuding_points, embedding_size],
             dtype=tf.float32
         )
@@ -72,13 +79,15 @@ class TFModel():
                                      name="w_2")  # (batch_size, seq_len, embedding_size)
 
         activation = lambda x: tf.nn.relu(x)
-        #t = 10
-        #activation = lambda x: (1/t) * tf.math.log( 1 + tf.exp(t*x))
+        # t = 10
+        # activation = lambda x: (1/t) * tf.math.log( 1 + tf.exp(t*x))
 
-        attention_1, attention_weights_1, self.alphas_1 = activation_attention(self.inducing_points, w_1, w_1, mask_1, activation)
-        attention_2, attention_weights_2, self.alphas_2 = activation_attention(self.inducing_points, w_2, w_2, mask_2, activation)
+        attention_1, attention_weights_1, self.alphas_1 = activation_attention(self.inducing_points, w_1, w_1, mask_1,
+                                                                               activation)
+        attention_2, attention_weights_2, self.alphas_2 = activation_attention(self.inducing_points, w_2, w_2, mask_2,
+                                                                               activation)
 
-        #self.covariance_loss = cosine_loss(self.inducing_points)
+        # self.covariance_loss = cosine_loss(self.inducing_points)
 
         self.attention_vectors = [attention_1, attention_2]
         self.attention_weights = [attention_weights_1, attention_weights_2]
@@ -90,20 +99,21 @@ class TFModel():
         self.obj_loss = tf.reduce_sum(tf.negative(tf.log(self.score)), name="loss")
 
         self.loss = self.obj_loss
-        self.lr =tf.Variable(0.001)
+        self.lr = tf.Variable(0.001)
         self.optimizer = tf.train.AdamOptimizer(
-         name="optimizer",
-         learning_rate=self.lr
-         ).minimize(self.loss)
-        #self.optimizer = tf.contrib.opt.LazyAdamOptimizer(
+            name="optimizer",
+            learning_rate=self.lr
+        ).minimize(self.loss)
+        # self.optimizer = tf.contrib.opt.LazyAdamOptimizer(
         #    name="optimizer",
         #    learning_rate=self.lr
-        #).minimize(self.loss)
+        # ).minimize(self.loss)
 
 
 class Model:
 
-    def __init__(self, embedding_size=256, number_iterations=5e3, number_incuding_points = 32,  number_negative=1, batch_size=16):
+    def __init__(self, embedding_size=256, number_iterations=5e3, number_incuding_points=32, number_negative=1,
+                 batch_size=16):
         self.is_expert_finding = True
         self.batch_size = batch_size
         self.number_iterations = number_iterations
@@ -125,8 +135,7 @@ class Model:
             except StopIteration:
                 return
 
-
-    def fit(self, X, M, vocab = None):
+    def fit(self, X, M, vocab=None):
 
         """
         Fit the model
@@ -143,9 +152,8 @@ class Model:
             self.vocab = expert_finding.preprocessing.text.dictionary.Dictionary(M, min_df=5, max_df_ratio=0.25)
         logger.debug("Building sequences")
         seqs = [self.vocab.get_sequence(m) for m in M]
-        self.num_words = self.vocab.num_words + 1 # reserves index zero for padding/masking
-        self.M = [m+1 for m in seqs]
-
+        self.num_words = self.vocab.num_words + 1  # reserves index zero for padding/masking
+        self.M = [m + 1 for m in seqs]
 
         self.X = normalize(X, axis=1, norm='l1')
         self.X = (self.X + np.dot(self.X, self.X)) / 2
@@ -154,11 +162,17 @@ class Model:
         num_clocks = int(self.number_iterations)
         self.number_nodes = X.shape[0]
         logger.debug("Total number of iterations: {0}".format(self.number_iterations))
-        logger.debug("Total number of samples: {0}".format(self.number_iterations*(self.batch_size*(self.number_negative+1))))
-        clock = expert_finding.models.tools.Clock(num_clocks / 100)  #  A clock that will trigger every percent of progression
+        logger.debug("Total number of samples: {0}".format(
+            self.number_iterations * (self.batch_size * (self.number_negative + 1))))
+        clock = expert_finding.models.tools.Clock(
+            num_clocks / 100)  #  A clock that will trigger every percent of progression
         self.graph = tf.Graph()  # We create a computational graph (object that will store the tensorflow pipeline)
         with self.graph.as_default():
-            self.session = tf.Session()  # We create a session (object that will instantiate the graph)
+            # self.session = tf.Session()  # We create a session (object that will instantiate the graph)
+            self.session = tf.Session(
+                config=tf.ConfigProto(gpu_options=tf.GPUOptions(visible_device_list='0', allow_growth=True),
+                                      log_device_placement=True))
+
             with self.session.as_default():
                 self.model = TFModel(self.num_words, self.embedding_size, self.number_incuding_points)
                 init_op = tf.global_variables_initializer()  # we create an intitialization operation
@@ -170,7 +184,7 @@ class Model:
                 loss_average = 0
                 loss_average_count = 0
                 logger.debug("Building generator")
-                half_it = self.number_iterations/2
+                half_it = self.number_iterations / 2
                 for i, (uM, vM, x) in enumerate(self.__data_generator(
                         self.X,
                         self.M,
@@ -209,9 +223,9 @@ class Model:
                         T = self.number_iterations
                         k = 0.1
                         i_lr = 0.001
-                        #lr_assign_op = self.model.lr.assign(i_lr * (T - i) / T)
-                        #lr_assign_op = self.model.lr.assign(i_lr * np.exp(i/T))
-                        #self.session.run(lr_assign_op)
+                        # lr_assign_op = self.model.lr.assign(i_lr * (T - i) / T)
+                        # lr_assign_op = self.model.lr.assign(i_lr * np.exp(i/T))
+                        # self.session.run(lr_assign_op)
                         ratio = i / num_clocks
                         tot_time = generate_time + compute_time
                         logger.debug(
@@ -244,13 +258,13 @@ class Model:
         words = self.vocab.ids_to_words
         PP = self.get_inducing_points()
         w_counts = np.zeros((PP.shape[0], self.num_words))
-        w = np.zeros((PP.shape[0],  self.num_words))
-        a = np.zeros((PP.shape[0],len(self.M)))
-        for i,m in enumerate(self.M):
-            w1, w2, a1, a2 = self.get_weights_and_alphas(m,m)
-            w[:,m] += w1 * a1[:,np.newaxis]
-            a[:,i] = a1
-            w_counts[:,m] += 1
+        w = np.zeros((PP.shape[0], self.num_words))
+        a = np.zeros((PP.shape[0], len(self.M)))
+        for i, m in enumerate(self.M):
+            w1, w2, a1, a2 = self.get_weights_and_alphas(m, m)
+            w[:, m] += w1 * a1[:, np.newaxis]
+            a[:, i] = a1
+            w_counts[:, m] += 1
         w /= w_counts
         a_std = a.std(axis=1)
         sims = w[:, 1:]
@@ -298,19 +312,19 @@ class Model:
         W = self.get_word_embeddings()
         PP = self.get_inducing_points()
         sims = PP.dot(W.T)
-        sims = np.maximum(0,PP.dot(W.T))
-        #sims = normalize(sims, 'l1', axis=0)
+        sims = np.maximum(0, PP.dot(W.T))
+        # sims = normalize(sims, 'l1', axis=0)
 
         alphas = sims.sum(axis=1)
         alphas = alphas / alphas.sum()
         sorting_topics = np.argsort(alphas)[::-1]
         closest = np.argsort(sims, axis=1)[:, ::-1]
         for i in sorting_topics:
-            #for j in closest[i][:20]:
+            # for j in closest[i][:20]:
             #    print(f"{sims[i, j]:0.3f} => {words[j]} ")
-            print(f"\n Topic {i+1} ({alphas[i] * 100:0.1f}%) &{', '.join([words[j] for j in closest[i][:20]])}")
+            print(f"\n Topic {i + 1} ({alphas[i] * 100:0.1f}%) &{', '.join([words[j] for j in closest[i][:20]])}")
 
-        #plt.show()
+        # plt.show()
 
     def raw_attention(self, text):
         d = self.vocab.get_sequence(text)
@@ -347,7 +361,8 @@ class Model:
                     self.model.input_2_documents: [Mj],
                     self.model.input_x: [1],
                 }
-                attention_weights, alphas = self.session.run([self.model.attention_weights, self.model.alphas], feed_dict=feed_dict)
+                attention_weights, alphas = self.session.run([self.model.attention_weights, self.model.alphas],
+                                                             feed_dict=feed_dict)
                 w1, w2 = attention_weights[0][0], attention_weights[1][0]
                 a1, a2 = alphas[0][0], alphas[1][0]
                 return w1, w2, a1, a2
@@ -367,7 +382,7 @@ class Model:
                 return W[1:]
 
     def get_embeddings(self):
-       return self.vectors
+        return self.vectors
 
     def get_embeddings_new(self, docs):
         M = list()
@@ -390,12 +405,8 @@ class Model:
     def predict(self, i, j):
         u = self.get_embeddings()[i]
         v = self.get_embeddings()[j]
-        return 1-scipy.spatial.distance.cosine(u, v)
+        return 1 - scipy.spatial.distance.cosine(u, v)
 
     def predict_new(self, Mi, Mj):
         [u, v] = self.get_embeddings_new([Mi, Mj])
-        return 1-scipy.spatial.distance.cosine(u, v)
-
-
-
-
+        return 1 - scipy.spatial.distance.cosine(u, v)

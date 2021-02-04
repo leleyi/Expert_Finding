@@ -3,21 +3,34 @@ import time
 import math
 import logging
 import warnings
+import scipy
+
 warnings.filterwarnings('ignore')
 import expert_finding.preprocessing.text.dictionary
 import expert_finding.preprocessing.text.vectorizers
+
 logger = logging.getLogger()
 import expert_finding.preprocessing.graph.random_walker
 import expert_finding.preprocessing.graph.window_slider
 
 mpl_logger = logging.getLogger('matplotlib')
-mpl_logger.setLevel(logging.WARNING)
+mpl_logger.setLevel(logging.DEBUG)
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
-import tensorflow as tf
-tf.logging.set_verbosity(tf.logging.ERROR)  # or any {DEBUG, INFO, WARN, ERROR, FATAL}
-import tensorflow as tf
-if type(tf.contrib) != type(tf): tf.contrib._warning = None
+# tf.logging.set_verbosity(tf.logging.ERROR)  # or any {DEBUG, INFO, WARN, ERROR, FATAL}
+# import tensorflow as tf
+import tensorflow.compat.v1 as tf
+
+tf.disable_v2_behavior()
+# tf.reset_default_graph()
+logger = logging.getLogger()
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+import pickle
+
+
+# if type(tf.contrib) != type(tf): tf.contrib._warning = None
+
 
 class Clock():
     def __init__(self, epochs):
@@ -43,17 +56,18 @@ class Clock():
             self.status[epoch] = False
             return True
 
+
 class TFModel(object):
     def __init__(self,
-                 embedding_size, # embedding dim for both input/output
-                 learn_rate, # initial learning rate for gradient descent
-                 j_vector_size, # dim of output vectors
-                 i_index_size, # number of nodes in input space
+                 embedding_size,  #  embedding dim for both input/output
+                 learn_rate,  # initial learning rate for gradient descent
+                 j_vector_size,  #  dim of output vectors
+                 i_index_size,  # number of nodes in input space
                  pretrained_word_embeddings=None
-                ):
+                 ):
 
         self.embedding_size = embedding_size
-        self.init_range = 1/embedding_size
+        self.init_range = 1 / embedding_size
         self.learn_rate = learn_rate
         self.j_vector_size = j_vector_size
         self.i_index_size = i_index_size
@@ -75,12 +89,12 @@ class TFModel(object):
         self.vectorJ = tf.sparse_placeholder(tf.float32, name="inputJ")
         if pretrained_word_embeddings is None:
             self.JW = tf.Variable(
-                tf.random_uniform([self.j_vector_size, self.embedding_size], -self.init_range, self.init_range), name="JW")
+                tf.random_uniform([self.j_vector_size, self.embedding_size], -self.init_range, self.init_range),
+                name="JW")
         else:
             self.JW = tf.Variable(pretrained_word_embeddings,
-                                 name="JW",
-                                 trainable=True)
-
+                                  name="JW",
+                                  trainable=True)
 
         lookup = tf.sparse_tensor_dense_matmul(self.vectorJ, self.JW, adjoint_a=False, adjoint_b=False, name="wj")
         sums = tf.sparse_reduce_sum(self.vectorJ, 1, keep_dims=True)
@@ -88,8 +102,8 @@ class TFModel(object):
 
         self.Xij = tf.placeholder(tf.float32, shape=[None], name="Xij")
 
-        wiwjProduct = tf.reduce_sum(tf.multiply(self.wi,self.wj), 1)
-        logXij = tf.log(1+self.Xij)
+        wiwjProduct = tf.reduce_sum(tf.multiply(self.wi, self.wj), 1)
+        logXij = tf.log(1 + self.Xij)
 
         dist = tf.square(tf.add_n([wiwjProduct, self.bi, tf.negative(logXij)]))
 
@@ -99,17 +113,15 @@ class TFModel(object):
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
         self.learnRate = tf.Variable(learn_rate, trainable=False, name="learnRate")
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learnRate, name="optimizer").minimize(
-                self.loss, global_step=self.global_step)
-
-
+            self.loss, global_step=self.global_step)
 
 
 class Model:
 
-    def __init__(self, saver = None, callback = None):
+    def __init__(self, saver=None, callback=None):
         self.saver = saver
         self.callback = callback
-        self.X = None # nodes cooccurrences matrix
+        self.X = None  # nodes cooccurrences matrix
         self.M = None  # nodes feature matrix
         self.J_matrix = None
         self.I_matrix = None
@@ -161,12 +173,12 @@ class Model:
 
         M = len(cols)
         cols_neg = np.tile(cols, self.k_neg)
-        rows_neg = np.random.randint(0, self.X.shape[0], self.k_neg*M)
-        #rows_neg = np.random.choice(np.arange(self.X.shape[0]), size=self.k_neg*M, p=nodes_negsampling_prob)
+        rows_neg = np.random.randint(0, self.X.shape[0], self.k_neg * M)
+        # rows_neg = np.random.choice(np.arange(self.X.shape[0]), size=self.k_neg*M, p=nodes_negsampling_prob)
 
-        cols = np.hstack((cols,cols_neg))
+        cols = np.hstack((cols, cols_neg))
         rows = np.hstack((rows, rows_neg))
-        data = np.hstack((data, np.zeros(self.k_neg*M)))
+        data = np.hstack((data, np.zeros(self.k_neg * M)))
 
         ind = np.arange(len(data))
         np.random.shuffle(ind)
@@ -176,24 +188,21 @@ class Model:
         logger.debug("Shape of X=%s", self.X.shape)
         for ind in self.chuncker(range(0, len(data)), self.batch_size):
             N = len(ind)
-            values = np.array([v for i,k in enumerate(cols[ind]) for v in sparse_vectors[k]], dtype=np.float32)
-            indices = np.array([[l, v] for l, k in enumerate(cols[ind]) for m, v in enumerate(sparse_indices[k])], dtype=np.int64)
+            values = np.array([v for i, k in enumerate(cols[ind]) for v in sparse_vectors[k]], dtype=np.float32)
+            indices = np.array([[l, v] for l, k in enumerate(cols[ind]) for m, v in enumerate(sparse_indices[k])],
+                               dtype=np.int64)
             dense_shape = np.array([N, M_dim], dtype=np.float32)
             Jvectors = tf.SparseTensorValue(indices, values, dense_shape)
             yield rows[ind], Jvectors, data[ind]
 
-
-    def fit(self,
-            X,
-            M,
-            pretrained_word_embeddings = None,
-            embedding_size = 128,
-            batch_size = 128,
-            n_epochs = 4,
+    def fit(self, X, M,
+            pretrained_word_embeddings=None,
+            embedding_size=128,
+            batch_size=128,
+            n_epochs=4,
             learn_rate=0.001,
-            k_neg = 1,
-            x_min = 2
-            ):
+            k_neg=1,
+            x_min=2):
 
         random_walker = expert_finding.preprocessing.graph.random_walker.RandomWalker(
             X,
@@ -214,7 +223,8 @@ class Model:
         self.X.eliminate_zeros()
         logger.debug("Size of X.data after filtering:%s", len(self.X.data))
         logger.debug(" ".join([str(v) for v in ["Shape of cooccurrences matrix : ", X.shape]]))
-        logger.debug(" ".join([str(v) for v in ["Density of cooccurrences matrix: ", " (", len(X.data) * 100 / (X.shape[0] * X.shape[1]), "%)"]]))
+        logger.debug(" ".join([str(v) for v in ["Density of cooccurrences matrix: ", " (",
+                                                len(X.data) * 100 / (X.shape[0] * X.shape[1]), "%)"]]))
 
         logger.debug(
             "X => Min=%s/Max=%s/Mean=%s/Std=%s/Sum=%s:",
@@ -224,9 +234,10 @@ class Model:
             X.data.std(),
             X.data.sum()
         )
-        self.vocab = expert_finding.preprocessing.text.dictionary.Dictionary(M)
-        logger.debug("Building tf vectors")
-        self.M = expert_finding.preprocessing.text.vectorizers.get_tf_dictionary(self.vocab)
+        # data_path = "/ddisk/lj/DBLP/data/V2/dataset_cleaned"
+        print("Load v2_cleaned tf_matrix")
+        # self.M = expert_finding.preprocessing.text.vectorizers.get_tf_dictionary(self.vocab)
+        self.M = scipy.sparse.load_npz("/ddisk/lj/DBLP/data/V2/dataset_cleaned/embedding/" + "tf_matrix.npz")
         logger.debug(" ".join([str(v) for v in ["Shape of features matrix : ", self.M.shape]]))
 
         self.links_count = len(self.X.data)
@@ -237,21 +248,26 @@ class Model:
         self.n_epochs = n_epochs
         self.embedding_size = embedding_size  # dimension of embeddings
         self.k_neg = k_neg
-        self.num_batches = math.ceil(self.links_count*(1+self.k_neg) / self.batch_size) * n_epochs
+        self.num_batches = math.ceil(self.links_count * (1 + self.k_neg) / self.batch_size) * n_epochs
         self.learn_rate = learn_rate
 
-        logger.debug("Number of data={0}, number of batches={1}, number of epochs={2}".format(self.links_count, self.num_batches, n_epochs))
+        logger.debug(
+            "Number of data={0}, number of batches={1}, number of epochs={2}".format(self.links_count, self.num_batches,
+                                                                                     n_epochs))
         loss = 0
         self.graph = tf.Graph()
         with self.graph.as_default():
-            self.session = tf.Session()
+            # self.session = tf.Session()
+            self.session = tf.Session(
+                config=tf.ConfigProto(gpu_options=tf.GPUOptions(visible_device_list='0', allow_growth=True),
+                                      log_device_placement=True))
             with self.session.as_default():
                 model = TFModel(
-                      embedding_size = self.embedding_size,
-                      learn_rate = self.learn_rate,
-                      j_vector_size = self.j_vector_size,
-                      i_index_size = self.i_index_size,
-                      pretrained_word_embeddings = pretrained_word_embeddings,
+                    embedding_size=self.embedding_size,
+                    learn_rate=self.learn_rate,
+                    j_vector_size=self.j_vector_size,
+                    i_index_size=self.i_index_size,
+                    pretrained_word_embeddings=pretrained_word_embeddings,
                 )
                 lr = 0
                 init_op = tf.global_variables_initializer()
@@ -269,16 +285,18 @@ class Model:
                             model.Xij: Xij
                         }
                         _, loss, lr, gs = self.session.run([model.optimizer,
-                                                       model.loss,
-                                                       model.learnRate,
-                                                       model.global_step],
-                                                      feed_dict=feed_dict)
+                                                            model.loss,
+                                                            model.learnRate,
+                                                            model.global_step],
+                                                           feed_dict=feed_dict)
                         loss = loss / self.batch_size
                         progression = gs / self.num_batches
                         if gs % (self.num_batches // 1000) == 0:
                             now = time.strftime("%H:%M:%S")
-                            logger.debug("{} Progression={:1} Ep={:2}  GS={:5.2e}  LR={:5.2e}  Loss={:4.3f}  Speed={:5.2e}s/sec".format(
-                                now, int(progression*100), epoch, gs, lr, loss,  self.batch_size * gs / (time.time() - start)))
+                            logger.debug(
+                                "{} Progression={:1} Ep={:2}  GS={:5.2e}  LR={:5.2e}  Loss={:4.3f}  Speed={:5.2e}s/sec".format(
+                                    now, int(progression * 100), epoch, gs, lr, loss,
+                                    self.batch_size * gs / (time.time() - start)))
                         if self.saver is not None and progression >= saver_step:
                             saver_step += 0.1
                             emb_types = ["IJ", "I", "J"]
@@ -318,11 +336,8 @@ class Model:
 
     def sparse_embeddings(self):
         sums = self.M.sum(axis=1)
-        sums[sums==0] = 1
+        sums[sums == 0] = 1
         return self.M.dot(self.J_matrix) / sums
 
     def get_embeddings(self):
         return np.asarray(self.vectors)
-
-
-

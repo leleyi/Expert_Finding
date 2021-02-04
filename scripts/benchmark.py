@@ -55,12 +55,12 @@ def main():
         #"pre idne": expert_finding.models.pre_ane_model.Model(expert_finding.models.idne.Model),
         #"post idne": expert_finding.models.post_ane_model.Model(expert_finding.models.idne.Model),
         "gvnrt expert": expert_finding.models.gvnrt_expert_model.Model(),
-        #"pre tadw": expert_finding.models.pre_ane_model.Model(expert_finding.models.tadw.Model),
-        #"pre gvnrt": expert_finding.models.pre_ane_model.Model(expert_finding.models.gvnrt.Model),
+        # "pre tadw": expert_finding.models.pre_ane_model.Model(expert_finding.models.tadw.Model),
+        # "pre gvnrt": expert_finding.models.pre_ane_model.Model(expert_finding.models.gvnrt.Model),
         #"pre g2g": expert_finding.models.pre_ane_model.Model(expert_finding.models.graph2gauss.Model),
         #"post tadw": expert_finding.models.post_ane_model.Model(expert_finding.models.tadw.Model),
-        #"post gvnrt": expert_finding.models.post_ane_model.Model(expert_finding.models.gvnrt.Model),
-        #"post g2g": expert_finding.models.post_ane_model.Model(expert_finding.models.graph2gauss.Model),
+        "post gvnrt": expert_finding.models.post_ane_model.Model(expert_finding.models.gvnrt.Model),
+        "post g2g": expert_finding.models.post_ane_model.Model(expert_finding.models.graph2gauss.Model),
 
     }
 
